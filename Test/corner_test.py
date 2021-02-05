@@ -1,4 +1,4 @@
-import cv2
+from cv2 import cv2 # added "from cv2" to remove all squiggly lines underneath cv2 functions, fix found from stackoverflow
 import numpy as np
 from os import listdir
 
