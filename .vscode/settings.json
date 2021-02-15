@@ -1,3 +1,4 @@
 {
     "python.linting.pylintArgs": ["--extension-pkg-whitelist=cv2","--errors-only","--disable=C0111"],
+    "python.autoComplete.extraPaths": ["./Main"],
 }

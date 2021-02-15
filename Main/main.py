@@ -1,7 +1,7 @@
 import sys
 from cv2 import cv2 
 from os import listdir, path
-import functions as functions
+import functions
 
 TEST_MODE = False
 
@@ -42,6 +42,5 @@ if __name__ == "__main__":
     
     if TEST_MODE:
         test()
-        
     else:
         main()
