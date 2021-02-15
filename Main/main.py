@@ -1,20 +1,28 @@
 import sys
 from cv2 import cv2 
-from os import listdir
+from os import listdir, path
 import functions as functions
 
-TEST_MODE = True
+TEST_MODE = False
 
+#Main function for data Collection
 def main():
-    for imgPath in listdir('Logos/'):
-        logo = Logo(cv2.imread('Logos/' + imgPath, cv2.IMREAD_UNCHANGED), imgPath)
+    dir_path = path.dirname(path.realpath(__file__)) + "\\..\\Logos"
+
+    for imgPath in listdir(dir_path):
+        logo = Logo(cv2.imread(dir_path + imgPath, cv2.IMREAD_UNCHANGED), imgPath)
         
         for function in functions.ExportFunctions:
             function(logo, False)
+        
 
+#Test function to test individual features
 def test():
-    for imgPath in listdir('TestLogos/'):
-        logo = Logo(cv2.imread('TestLogos/' + imgPath, cv2.IMREAD_UNCHANGED), imgPath)
+    #Passes each logo into each function in the TestFunction array
+    dir_path = path.dirname(path.realpath(__file__)) + "\\..\\TestLogos"
+
+    for imgPath in listdir(dir_path):
+        logo = Logo(cv2.imread(dir_path + imgPath, cv2.IMREAD_UNCHANGED), imgPath)
 
         for function in functions.TestFunctions:
             function(logo, False)
@@ -27,6 +35,8 @@ class Logo:
         self.img = img
         self.name = name
         self.attributes = {}
+
+
 
 if __name__ == "__main__":
     
