@@ -72,12 +72,41 @@ def gradients(logo, display = 0, Tol = 0.1):
     cv2.waitKey(0)
 
     logo.attributes["Percent Gradient"] = PercentGradients
+
+def calcPercentage(msk): 
+	# returns the percentage of white in a binary image 
+	height, width = msk.shape[:2] 
+	num_pixels = height * width 
+	count_white = cv.countNonZero(msk) 
+	percent_white = (count_white/num_pixels) * 100 
+	percent_white = round(percent_white,2) 
+	return percent_white
+
+def MAIN_FOR_PERCENT_OF_COLORS(logo, display):
+    Percentage_of_Colors(logo, display, 50, 20, "green")
+    Percentage_of_Colors(logo, display, 5, 5, "red")
+    Percentage_of_Colors(logo, display, 100, 10, "light blue")
+    Percentage_of_Colors(logo, display, 120, 10, "dark blue")
+
+def Percentage_of_Colors(logo, display, color, sensitivity, colorName):
+    img = logo.img
+    # img = cv.imread('Opencv/dog.jpg')
+    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) # converting to hsv for better color processing
+
+    sensitivity = 20 # check hsv chart for understanding 
+    lower_bound = np.array([color - sensitivity, 100, 60]) # 50 is in the center of green so 50 +- 20 will give the entire width
+    upper_bound = np.array([color + sensitivity, 255, 255]) # of green. [H, S, V] h is hue value, s is saturation, v is value or brightness
+    # creates a binary mask for only green parts of an image. 
+    # So in this case the green parts of an image will be white and the rest of the regions will be black.
+    msk = cv2.inRange(img_hsv, lower_bound, upper_bound)
+
+    logo.attributes["Percentage of " + colorName] = calcPercentage(msk)
     
 #Add name of function to this array
-ExportFunctions = [testFunction]
+ExportFunctions = []
 
 #Add name of function to this array if you want to test
-TestFunctions = [testFunction]
+TestFunctions = [MAIN_FOR_PERCENT_OF_COLORS, ]
 
 '''
 HOW TO TEST YOU FUNCTION
