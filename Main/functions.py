@@ -7,7 +7,7 @@ def testFunction(logo, display):
     logo.attributes["Average Saturation"] = 10
     print(10)
 
-def aveBrightness(logo, Disp = True, Tol = 0.10):
+def aveBrightness(logo, display = False, Tol = 0.10):
     image = logo.img
     #Convert to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
@@ -20,7 +20,7 @@ def aveBrightness(logo, Disp = True, Tol = 0.10):
     rows, cols = gray.shape
     for i in range(rows):
       for j in range(cols):
-        #If white, replace with black (remove background)
+        #If background is transparent, add one to the number of background pixels
         if (image[i,j,3] <= (1-(255*(1-Tol)))):
             numBack = numBack + 1
 
@@ -28,10 +28,11 @@ def aveBrightness(logo, Disp = True, Tol = 0.10):
         sumColor = sumColor + grayNoBack[i,j]
 
     #Display processed images
-    if Disp == 1:
+    if display == 1:
         cv2.imshow("Unfiltered", image)
         cv2.imshow("Gray", gray)
         cv2.imshow("Gray, No Background", grayNoBack)
+        cv2.waitKey(0)
 
     numTotal = rows * cols
     numLogo = numTotal - numBack
@@ -42,33 +43,40 @@ def aveBrightness(logo, Disp = True, Tol = 0.10):
 
     logo.attributes["Percent Brightness"] = PercentBrightness
     
-def gradients(logo, display = 0, Tol = 0.1):
+def gradients(logo, display = False, Tol = 0.1):
     image = logo.img
 
-    cv2.imshow('normal',image)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    cv2.imshow('Gray',gray)
-    gradientsAndEdges = cv2.Canny(image,-10000,-10000)
-    cv2.imshow('Gradients and Edges',gradientsAndEdges)
-    edges = cv2.Canny(image,125,125)
-    cv2.imshow('Edges', edges)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)          # Create Grayscale
+    gradientsAndEdges = cv2.Canny(image,-10000,-10000)      # Create gradients and edges
+    edges = cv2.Canny(image,200,200)                        # Create edges
+    gradients = cv2.bitwise_xor(gradientsAndEdges, edges)   # Subtract edges from gradients and edges to get only gradients
 
-    gradients = cv2.bitwise_xor(gradientsAndEdges, edges)
-    cv2.imshow('Gradients', gradients)
-
-    logoPixelCount = 0
+    numBack = 0
     numGradients = 0
 
     # Count the number of pixels in the logo
     rows, cols = gray.shape
     for i in range(rows):
       for j in range(cols):
-        if (not((gray[i,j] <= (1-(255*(1-Tol)))) or gray[i,j] >= (255*(1-Tol)))):
-            logoPixelCount = logoPixelCount + 1
+        #If background is transparent, add one to the number of background pixels
+        if (image[i,j,3] <= (1-(255*(1-Tol)))):
+            numBack = numBack + 1
         if (gradients[i,j] == 255):
             numGradients = numGradients + 1
 
-    PercentGradients = numGradients / logoPixelCount * 100
+    # Display processed images
+    if display == 1:
+        cv2.imshow("Unfiltered", image)
+        cv2.imshow("Gray", gray)
+        cv2.imshow('Gradients and Edges',gradientsAndEdges)
+        cv2.imshow('Edges', edges)
+        cv2.imshow('Gradients', gradients)
+        cv2.waitKey(0)
+
+    numTotal = rows * cols
+    numLogo = numTotal - numBack
+
+    PercentGradients = numGradients / numLogo * 100
     cv2.waitKey(0)
 
     logo.attributes["Percent Gradient"] = PercentGradients
@@ -106,7 +114,7 @@ def Percentage_of_Colors(logo, display, color, sensitivity, colorName):
 ExportFunctions = []
 
 #Add name of function to this array if you want to test
-TestFunctions = [MAIN_FOR_PERCENT_OF_COLORS, ]
+TestFunctions = [gradients, aveBrightness]
 
 '''
 HOW TO TEST YOU FUNCTION
