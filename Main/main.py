@@ -7,9 +7,9 @@ import functions
 TEST_MODE = True
 
 #Main function for data Collection
-def main(folderName="Logos", functionList=functions.ExportFunctions):
+def main(folderName="Logos", functionList=functions.ExportFunctions, debug=False):
 
-    dir_path = path.dirname(path.realpath(__file__)) + "\\..\\Logos\\"
+    dir_path = path.dirname(path.realpath(__file__)) + "\\..\\"+folderName+"\\"
 
     for imgPath in listdir(dir_path):
 
@@ -21,7 +21,11 @@ def main(folderName="Logos", functionList=functions.ExportFunctions):
         logo = Logo(img, imgPath)
         
         for function in functionList:
-            function(logo, False)      
+            function(logo, False)  
+
+        if debug:
+            print(logo.name)
+            print(logo.attributes)    
 
 class Logo:
     def __init__(self, img, name):
@@ -39,6 +43,6 @@ def AddAlphaChannel(img):
 if __name__ == "__main__":
     
     if TEST_MODE:
-        main("TestLogos", functions.TestFunctions)
+        main("TestLogos", functions.TestFunctions, True)
     else:
         main()
