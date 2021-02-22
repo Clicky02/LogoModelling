@@ -11,6 +11,8 @@ def main(folderName="Logos", functionList=functions.ExportFunctions, debug=False
 
     dir_path = path.dirname(path.realpath(__file__)) + "\\..\\"+folderName+"\\"
 
+    logos = []
+
     for imgPath in listdir(dir_path):
 
         img = cv2.imread(dir_path + imgPath, cv2.IMREAD_UNCHANGED)
@@ -25,7 +27,9 @@ def main(folderName="Logos", functionList=functions.ExportFunctions, debug=False
 
         if debug:
             print(logo.name)
-            print(logo.attributes)    
+            print(logo.attributes)
+
+        logos.append(logo)
 
 class Logo:
     def __init__(self, img, name):
