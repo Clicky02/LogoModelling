@@ -37,7 +37,7 @@ def test():
         logo = Logo(img, imgPath)
 
         for function in functions.TestFunctions:
-            function(logo, False)
+            function(logo, True)
 
         print(logo.name)
         print(logo.attributes)

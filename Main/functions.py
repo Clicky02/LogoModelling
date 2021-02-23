@@ -1,5 +1,5 @@
 from cv2 import cv2 
-
+import utils
 
 def testFunction(logo, display):
     img = logo.img
@@ -29,9 +29,9 @@ def aveBrightness(logo, display = False, Tol = 0.10):
 
     #Display processed images
     if display == 1:
-        cv2.imshow("Unfiltered", image)
-        cv2.imshow("Gray", gray)
-        cv2.imshow("Gray, No Background", grayNoBack)
+        cv2.imshow("Unfiltered", utils.resize(image))
+        cv2.imshow("Gray", utils.resize(gray))
+        cv2.imshow("Gray, No Background", utils.resize(grayNoBack))
         cv2.waitKey(0)
 
     numTotal = rows * cols
@@ -66,11 +66,11 @@ def gradients(logo, display = False, Tol = 0.1):
 
     # Display processed images
     if display == 1:
-        cv2.imshow("Unfiltered", image)
-        cv2.imshow("Gray", gray)
-        cv2.imshow('Gradients and Edges',gradientsAndEdges)
-        cv2.imshow('Edges', edges)
-        cv2.imshow('Gradients', gradients)
+        cv2.imshow("Unfiltered", utils.resize(image))
+        cv2.imshow("Gray", utils.resize(gray))
+        cv2.imshow('Gradients and Edges', utils.resize(gradientsAndEdges))
+        cv2.imshow('Edges', utils.resize(edges))
+        cv2.imshow('Gradients', utils.resize(gradients))
         cv2.waitKey(0)
 
     numTotal = rows * cols
@@ -114,7 +114,7 @@ def Percentage_of_Colors(logo, display, color, sensitivity, colorName):
 ExportFunctions = []
 
 #Add name of function to this array if you want to test
-TestFunctions = [gradients, aveBrightness]
+TestFunctions = [aveBrightness]
 
 '''
 HOW TO TEST YOU FUNCTION
