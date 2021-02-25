@@ -1,5 +1,6 @@
 from cv2 import cv2 
 import utils
+import numpy as np
 
 def testFunction(logo, display):
     img = logo.img
@@ -85,7 +86,7 @@ def calcPercentage(msk):
 	# returns the percentage of white in a binary image 
 	height, width = msk.shape[:2] 
 	num_pixels = height * width 
-	count_white = cv.countNonZero(msk) 
+	count_white = cv2.countNonZero(msk) 
 	percent_white = (count_white/num_pixels) * 100 
 	percent_white = round(percent_white,2) 
 	return percent_white
