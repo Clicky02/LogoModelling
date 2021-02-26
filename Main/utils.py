@@ -88,6 +88,10 @@ def Percentage_of_Colors(logo, display, colorName):
 
     logo.attributes["Percentage of " + colorName] = calcPercentage(msk)
 
+    flag = 1
     if display == 1:
+        if flag == 1:
+            cv2.imshow(logo.name, resize(img))
+            flag = 0
         cv2.imshow(logo.name + '_' + colorName, resize(msk))
         cv2.waitKey(0) 
