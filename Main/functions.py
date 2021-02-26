@@ -128,7 +128,7 @@ def Main_for_Number_of_Colors(logo, display): # Black and White do not count as 
 ExportFunctions = []
 
 #Add name of function to this array if you want to test
-TestFunctions = [Main_for_Number_of_Colors]
+TestFunctions = [aveBrightness, gradients, Main_for_Percent_of_Colors, Main_for_Number_of_Colors]
 
 '''
 HOW TO TEST YOU FUNCTION
