@@ -82,7 +82,7 @@ def gradients(logo, display = False, Tol = 0.1):
 
     logo.attributes["Percent Gradient"] = PercentGradients
 
-def MAIN_FOR_PERCENT_OF_COLORS(logo, display):
+def Main_for_Percent_of_Colors(logo, display):
     utils.Percentage_of_Colors(logo, display, "red")
     utils.Percentage_of_Colors(logo, display, "orange")
     utils.Percentage_of_Colors(logo, display, "yellow")
@@ -93,13 +93,42 @@ def MAIN_FOR_PERCENT_OF_COLORS(logo, display):
     utils.Percentage_of_Colors(logo, display, "purple")
     utils.Percentage_of_Colors(logo, display, "magenta")
     utils.Percentage_of_Colors(logo, display, "pink")
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows() # removes all open windows for the referenced logo
+
+def Main_for_Number_of_Colors(logo, display): # Black and White do not count as colors
+    ctr = 0
+    if(utils.Number_of_Colors(logo, "red")): #Number of colors returns true or false if red % is >0
+        ctr = ctr + 1
+    if(utils.Number_of_Colors(logo, "orange")):
+        ctr = ctr + 1
+    if(utils.Number_of_Colors(logo, "yellow")):
+        ctr = ctr + 1
+    if(utils.Number_of_Colors(logo, "green")):
+        ctr = ctr + 1
+    if(utils.Number_of_Colors(logo, "cyan")):
+        ctr = ctr + 1
+    if(utils.Number_of_Colors(logo, "cyan-blue")):
+        ctr = ctr + 1
+    if(utils.Number_of_Colors(logo, "blue")):
+        ctr = ctr + 1
+    if(utils.Number_of_Colors(logo, "purple")):
+        ctr = ctr + 1
+    if(utils.Number_of_Colors(logo, "magenta")):
+        ctr = ctr + 1
+    if(utils.Number_of_Colors(logo, "pink")):
+        ctr = ctr + 1
     
+    if(ctr>=2):
+        logo.attributes["Multicolored?"] = True
+        logo.attributes["Number of colors"] = ctr
+    else:
+        logo.attributes["Multicolored?"] = False
+
 #Add name of function to this array
 ExportFunctions = []
 
 #Add name of function to this array if you want to test
-TestFunctions = [MAIN_FOR_PERCENT_OF_COLORS]
+TestFunctions = [Main_for_Number_of_Colors]
 
 '''
 HOW TO TEST YOU FUNCTION
