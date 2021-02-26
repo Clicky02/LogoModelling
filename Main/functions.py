@@ -1,6 +1,5 @@
 from cv2 import cv2 
 import utils
-import numpy as np
 
 def testFunction(logo, display):
     img = logo.img
@@ -22,6 +21,7 @@ def aveBrightness(logo, display = False, Tol = 0.10):
     for i in range(rows):
       for j in range(cols):
         #If background is transparent, add one to the number of background pixels
+        # I don't think this block of code is necessary anymore as main.py gives all pixels an alpha value of 255 (opaque) ~ PG
         if (image[i,j,3] <= (1-(255*(1-Tol)))):
             numBack = numBack + 1
 
@@ -82,40 +82,24 @@ def gradients(logo, display = False, Tol = 0.1):
 
     logo.attributes["Percent Gradient"] = PercentGradients
 
-def calcPercentage(msk): 
-	# returns the percentage of white in a binary image 
-	height, width = msk.shape[:2] 
-	num_pixels = height * width 
-	count_white = cv2.countNonZero(msk) 
-	percent_white = (count_white/num_pixels) * 100 
-	percent_white = round(percent_white,2) 
-	return percent_white
-
 def MAIN_FOR_PERCENT_OF_COLORS(logo, display):
-    Percentage_of_Colors(logo, display, 50, 20, "green")
-    Percentage_of_Colors(logo, display, 5, 5, "red")
-    Percentage_of_Colors(logo, display, 100, 10, "light blue")
-    Percentage_of_Colors(logo, display, 120, 10, "dark blue")
-
-def Percentage_of_Colors(logo, display, color, sensitivity, colorName):
-    img = logo.img
-    # img = cv.imread('Opencv/dog.jpg')
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) # converting to hsv for better color processing
-
-    sensitivity = 20 # check hsv chart for understanding 
-    lower_bound = np.array([color - sensitivity, 100, 60]) # 50 is in the center of green so 50 +- 20 will give the entire width
-    upper_bound = np.array([color + sensitivity, 255, 255]) # of green. [H, S, V] h is hue value, s is saturation, v is value or brightness
-    # creates a binary mask for only green parts of an image. 
-    # So in this case the green parts of an image will be white and the rest of the regions will be black.
-    msk = cv2.inRange(img_hsv, lower_bound, upper_bound)
-
-    logo.attributes["Percentage of " + colorName] = calcPercentage(msk)
+    utils.Percentage_of_Colors(logo, display, "red")
+    utils.Percentage_of_Colors(logo, display, "orange")
+    utils.Percentage_of_Colors(logo, display, "yellow")
+    utils.Percentage_of_Colors(logo, display, "green")
+    utils.Percentage_of_Colors(logo, display, "cyan")
+    utils.Percentage_of_Colors(logo, display, "cyan-blue")
+    utils.Percentage_of_Colors(logo, display, "blue")
+    utils.Percentage_of_Colors(logo, display, "purple")
+    utils.Percentage_of_Colors(logo, display, "magenta")
+    utils.Percentage_of_Colors(logo, display, "pink")
+    cv2.destroyAllWindows()
     
 #Add name of function to this array
 ExportFunctions = []
 
 #Add name of function to this array if you want to test
-TestFunctions = [aveBrightness]
+TestFunctions = [MAIN_FOR_PERCENT_OF_COLORS]
 
 '''
 HOW TO TEST YOU FUNCTION
