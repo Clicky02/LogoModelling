@@ -22,7 +22,7 @@ def aveBrightness(logo, display = False, Tol = 0.10):
       for j in range(cols):
         #If background is transparent, add one to the number of background pixels
         # I don't think this block of code is necessary anymore as main.py gives all pixels an alpha value of 255 (opaque) ~ PG
-        if (image[i,j,3] <= (1-(255*(1-Tol)))):
+        if (image[i,j,3] <= (255-(255*(1-Tol)))):
             numBack = numBack + 1
 
         #Add current pixel to the total of pixels
@@ -60,7 +60,7 @@ def gradients(logo, display = False, Tol = 0.1):
     for i in range(rows):
       for j in range(cols):
         #If background is transparent, add one to the number of background pixels
-        if (image[i,j,3] <= (1-(255*(1-Tol)))):
+        if (image[i,j,3] <= (255-(255*(1-Tol)))):
             numBack = numBack + 1
         if (gradients[i,j] == 255):
             numGradients = numGradients + 1
