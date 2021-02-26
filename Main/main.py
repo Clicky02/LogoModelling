@@ -7,29 +7,40 @@ import functions
 TEST_MODE = True
 
 #Main function for data Collection
-def main(folderName="Logos", functionList=functions.ExportFunctions, debug=False):
-
-    dir_path = path.dirname(path.realpath(__file__)) + "\\..\\"+folderName+"\\"
-
-    logos = []
+def main():
+    dir_path = path.dirname(path.realpath(__file__)) + "\\..\\Logos\\"
 
     for imgPath in listdir(dir_path):
-
+        
         img = cv2.imread(dir_path + imgPath, cv2.IMREAD_UNCHANGED)
 
-        if (len(img[0,0]) < 4): # If there is no alpha value
+        if (len(img[0,0]) < 4):
             img = AddAlphaChannel(img)
  
         logo = Logo(img, imgPath)
         
-        for function in functionList:
-            function(logo, False)  
+        for function in functions.ExportFunctions:
+            function(logo, False)
+        
 
-        if debug:
-            print(logo.name)
-            print(logo.attributes)
+#Test function to test individual features
+def test():
+    #Passes each logo into each function in the TestFunction array
+    dir_path = path.dirname(path.realpath(__file__)) + "\\..\\TestLogos\\"
 
-        logos.append(logo)
+    for imgPath in listdir(dir_path):
+        img = cv2.imread(dir_path + imgPath, cv2.IMREAD_UNCHANGED)
+
+        if (len(img[0,0]) < 4):
+            img = AddAlphaChannel(img)
+ 
+        logo = Logo(img, imgPath)
+
+        for function in functions.TestFunctions:
+            function(logo, True)
+
+        print(logo.name)
+        print(logo.attributes)
 
 class Logo:
     def __init__(self, img, name):
@@ -47,6 +58,6 @@ def AddAlphaChannel(img):
 if __name__ == "__main__":
     
     if TEST_MODE:
-        main("TestLogos", functions.TestFunctions, True)
+        test()
     else:
         main()
