@@ -157,7 +157,67 @@ def Number_of_Colors(logo, colorName):
         upper_bound1 = np.array([172, 255, 255])
         msk = cv2.inRange(img_hsv, lower_bound1, upper_bound1)
 
-    if (calcPercentage(msk)>0.0):
-        return True
+    return calcPercentage(msk)>0.0
+
+def AddBorder(img, backgroundColor):
+    row, col = img.shape[:2]
+    bottom = img[row-2:row, 0:col]
+    mean = cv2.mean(bottom)[0]
+
+    bordersize = 10
+    border = cv2.copyMakeBorder(
+        img,
+        top=bordersize,
+        bottom=bordersize,
+        left=bordersize,
+        right=bordersize,
+        borderType=cv2.BORDER_CONSTANT,
+        value=backgroundColor
+    )
+    return border
+
+def GetBackground(img):
+    colors = {}
+
+    row, col = img.shape[:2]
+
+    for curRow in range(row-1):
+        if curRow == 0:
+            for curCol in range(col):
+                UpdateColorsWithPixel(colors, img[0][curCol], False)
+                UpdateColorsWithPixel(colors, img[row-1][curCol], False)
+        else:
+            UpdateColorsWithPixel(colors, img[curRow][0], False)
+            UpdateColorsWithPixel(colors, img[curRow][col - 1], False)
+
+    highestKey = ''
+    highestValue = 0
+
+    for key in colors:
+        if colors[key] > highestValue:
+            highestKey = key
+            highestValue = colors[key]
+
+    return [int(i) for i in highestKey.split(",")]
+
+def UpdateColorsWithPixel(colorDict, pixel, useAlpha):
+    if useAlpha:
+        key = "{},{},{},{}".format(*pixel)
     else:
-        return False
+        key = "{},{},{}".format(*pixel)
+
+    if key in colorDict:
+        colorDict[key] += 1
+    else:
+        colorDict[key] = 1
+
+def removeColor(img, color):
+    row, col = img.shape[:2]
+
+    for curRow in range(row):
+        for curCol in range(col):
+            if img[curRow,curCol,0] == color[0] and img[curRow,curCol,1] == color[1] and img[curRow,curCol,2] == color[2]:
+                img[curRow,curCol] = [0, 0, 0, 0]
+    
+    return img
+
