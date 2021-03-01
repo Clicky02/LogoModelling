@@ -1,29 +1,219 @@
 from cv2 import cv2 
 import utils
+import numpy as np
 
-def testFunction(logo, display):
+def detectShapes(logo, display):
+    img = logo.borderedImg
+
+    img = cv2.resize(img, (img.shape[1]*2, img.shape[0]*2))
+
+    if (display):
+        disImg = img.copy()
+
+    grayImg = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    #edges = cv2.Canny(grayImg, 30, 100)
+
+    contours, hierarchy = cv2.findContours(grayImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
+    rectangles = 0
+    triangles = 0
+    circles = 0
+
+    blur = cv2.medianBlur(grayImg, 5)
+    
+    circleObjects = cv2.HoughCircles(blur, cv2.HOUGH_GRADIENT, 1, 100)
+
+    if circleObjects is not None:
+
+        circles = len(circleObjects[0])
+
+        if display:
+            circleObjects = np.round(circleObjects[0, :]).astype("int") #round locations to integers
+            for (x, y, r) in circleObjects:
+                cv2.circle(disImg, (x, y), r, (0, 0, 255), 4) #draw circle
+        
+    for cnt in contours:
+
+        epsilon = 0.005*cv2.arcLength(cnt, True)
+
+        if epsilon >= .01:
+
+            approx = cv2.approxPolyDP(cnt, epsilon, True)
+
+            print(len(approx))
+
+            newDisImg = img.copy()
+
+            cv2.drawContours(newDisImg, cnt, -1, (255,50,90), 3)
+
+            if len(approx) == 3:
+
+                triangles += 1
+
+                if display:
+                    cv2.drawContours(disImg, cnt, -1, (0,255,0), 3)
+
+            elif len(approx) == 4:
+
+                rectangles += 1
+
+                if display:
+                    cv2.drawContours(disImg, cnt, -1, (255,0,0), 3)
+
+            cv2.imshow("----", newDisImg)
+            cv2.waitKey(0)
+            
+
+    logo.attributes["Rectangles"] = rectangles
+    logo.attributes["Triangles"] = triangles
+    logo.attributes["Circles"] = circles
+
+    if (display):
+        cv2.imshow("abc", disImg)
+        cv2.waitKey(0)
+
+def colorfulness(logo, display):
     img = logo.img
-    # Do stuff with img here
-    logo.attributes["Average Saturation"] = 10
-    print(10)
 
+    # split the image into its respective RGB components
+    B, G, R, A = cv2.split(img)
+	
+
+    rg = np.absolute(R - G)
+    yb = np.absolute(0.5 * (R + G) - B)
+
+    rbMean, rbStd = (np.mean(rg), np.std(rg))
+    ybMean, ybStd = (np.mean(yb), np.std(yb))
+
+	# combine the mean and standard deviations
+    stdRoot = np.sqrt((rbStd ** 2) + (ybStd ** 2))
+    meanRoot = np.sqrt((rbMean ** 2) + (ybMean ** 2))
+
+	# derive the "colorfulness" metric and return it
+    colorfulness = stdRoot + (0.3 * meanRoot)
+
+    logo.attributes["Colorfulness"] = colorfulness
+
+def colorVariance(logo, display):
+    img = logo.img
+
+    #Seperate alpha channel to use as mask
+    A = cv2.split(img)[3]
+
+    ret, mask = cv2.threshold(A, 30, 255, cv2.THRESH_BINARY)
+
+    bgrMean, bgrStdDev = cv2.meanStdDev(img, mask=mask)
+
+    logo.attributes["Average R"] = bgrMean[2][0]
+    logo.attributes["Average G"] = bgrMean[1][0]
+    logo.attributes["Average B"] = bgrMean[0][0]
+    logo.attributes["Standard Deviation R"] = bgrStdDev[2][0]
+    logo.attributes["Standard Deviation G"] = bgrStdDev[1][0]
+    logo.attributes["Standard Deviation B"] = bgrStdDev[0][0]
+
+    hsvImg = cv2.cvtColor(cv2.cvtColor(img, cv2.COLOR_BGRA2BGR), cv2.COLOR_BGR2HSV)
+
+    hueValues = cv2.split(hsvImg)[0]
+
+    #Inverts mask (because of how numpy masks work)
+    mask = ((mask / 255) - 1) * -1  
+
+    masked = np.ma.masked_array(hueValues, mask=mask)
+    hueValues = masked.compressed() #Gets a 1d array of non-masked values
+
+    #Convert hue (normally in degrees) to radians
+    hueValuesRad = np.deg2rad(hueValues)
+
+    #Get x and y positions
+    x = np.cos(hueValuesRad)
+    
+    y = np.sin(hueValuesRad)
+
+    #Get average hue (in degrees)
+    averageHue = np.arctan2(np.mean(y),np.mean(x))*(180/3.14159265358979)
+
+    #Create function to get the distance between the value and the average hue
+    def GetHueDistance(hue):
+        d = abs(hue - averageHue)
+        if d > 90:
+            d = 180 - d
+        return d
+
+    #Vectorize it (make it so it will apply to all values in an array)
+    distFunc = np.vectorize(GetHueDistance)
+
+    #Calculate std dev using this formula
+    hueStdDev = (np.sum(np.square(distFunc(hueValues)))/(len(hueValues)))**(1/2)
+
+    logo.attributes["Average Hue"] = averageHue*(359/179) #Hue scaled to 360 degree convention
+    logo.attributes["Hue Standard Deviation"] = hueStdDev*(359/179) #Hue scaled to 360 degree convention
+
+def whitespace(logo, display):
+    '''
+    This function determines how much whitespace there is as a percent
+    by going across each row of pixels and counting how many transparent
+    pixels there are between colored pixels.
+    '''
+    img = logo.img
+
+    if display:
+        disImg = np.zeros_like(img)
+    
+    rows, columns = img.shape[:2]
+
+    horizontalWhitespace = 0
+    totalCountedPixels = 0
+    for row in range(rows):
+
+        hasFoundForeground = False #whether a non-whitespace pixel has already been found in the row
+        currentGap = 0 #Used to count the current amount of whitespace in succession
+
+        for col in range(columns):
+            if img[row, col, 3] < 10:
+                currentGap += 1
+            else:
+                #If it finds a colored pixel after finding another colored
+                #pixel and whitespace, add the amount of whitespace to the 
+                #total whitespace
+                if currentGap > 0 and hasFoundForeground:
+                    horizontalWhitespace += currentGap
+                    totalCountedPixels += currentGap
+
+                    if display:
+                        for i in range(col-currentGap, col):
+                            disImg[row, i] = [255, 255, 255, 255]
+
+                
+                totalCountedPixels += 1
+                currentGap = 0
+                hasFoundForeground = True
+
+                if display:
+                    disImg[row, col] = [128, 128, 128, 255]
+
+    if display:
+        cv2.imshow("whitespace", disImg)
+        cv2.waitKey(0)
+
+    logo.attributes["Percent Whitespace"] = horizontalWhitespace/totalCountedPixels
+    
 def aveBrightness(logo, display = False, Tol = 0.10):
     image = logo.img
     #Convert to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
-
     sumColor = 0
     numBack = 0
 
     grayNoBack = gray.copy()
-    
+
     rows, cols = gray.shape
     for i in range(rows):
-      for j in range(cols):
-        #If background is transparent, add one to the number of background pixels
-        # I don't think this block of code is necessary anymore as main.py gives all pixels an alpha value of 255 (opaque) ~ PG
-        if (image[i,j,3] <= (255-(255*(1-Tol)))):
-            numBack = numBack + 1
+        for j in range(cols):
+            #If background is transparent, add one to the number of background pixels
+            # I don't think this block of code is necessary anymore as main.py gives all pixels an alpha value of 255 (opaque) ~ PG
+            if (image[i,j,3] <= (255-(255*(1-Tol)))):
+                numBack = numBack + 1
 
         #Add current pixel to the total of pixels
         sumColor = sumColor + grayNoBack[i,j]
@@ -58,12 +248,12 @@ def gradients(logo, display = False, Tol = 0.1):
     # Count the number of pixels in the logo
     rows, cols = gray.shape
     for i in range(rows):
-      for j in range(cols):
-        #If background is transparent, add one to the number of background pixels
-        if (image[i,j,3] <= (255-(255*(1-Tol)))):
-            numBack = numBack + 1
-        if (gradients[i,j] == 255):
-            numGradients = numGradients + 1
+        for j in range(cols):
+            #If background is transparent, add one to the number of background pixels
+            if (image[i,j,3] <= (255-(255*(1-Tol)))):
+                numBack = numBack + 1
+            if (gradients[i,j] == 255):
+                numGradients = numGradients + 1
 
     # Display processed images
     if display == 1:
@@ -125,10 +315,10 @@ def Main_for_Number_of_Colors(logo, display): # Black and White do not count as 
         logo.attributes["Multicolored?"] = False
 
 #Add name of function to this array
-ExportFunctions = []
+ExportFunctions = [testFunction]
 
 #Add name of function to this array if you want to test
-TestFunctions = [aveBrightness, gradients, Main_for_Percent_of_Colors, Main_for_Number_of_Colors]
+TestFunctions = [detectShapes]
 
 '''
 HOW TO TEST YOU FUNCTION
