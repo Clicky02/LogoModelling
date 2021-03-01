@@ -5,7 +5,7 @@ import numpy as np
 def detectShapes(logo, display):
     img = logo.borderedImg
 
-    img = cv2.resize(img, (img.shape[1]*2, img.shape[0]*2))
+    #img = cv2.resize(img, (img.shape[1]*2, img.shape[0]*2))
 
     if (display):
         disImg = img.copy()
@@ -41,8 +41,6 @@ def detectShapes(logo, display):
 
             approx = cv2.approxPolyDP(cnt, epsilon, True)
 
-            print(len(approx))
-
             newDisImg = img.copy()
 
             cv2.drawContours(newDisImg, cnt, -1, (255,50,90), 3)
@@ -60,9 +58,6 @@ def detectShapes(logo, display):
 
                 if display:
                     cv2.drawContours(disImg, cnt, -1, (255,0,0), 3)
-
-            cv2.imshow("----", newDisImg)
-            cv2.waitKey(0)
             
 
     logo.attributes["Rectangles"] = rectangles
@@ -315,10 +310,10 @@ def Main_for_Number_of_Colors(logo, display): # Black and White do not count as 
         logo.attributes["Multicolored?"] = False
 
 #Add name of function to this array
-ExportFunctions = [testFunction]
+ExportFunctions = []
 
 #Add name of function to this array if you want to test
-TestFunctions = [detectShapes]
+TestFunctions = [detectShapes, whitespace, gradients, aveBrightness, colorVariance, colorfulness]
 
 '''
 HOW TO TEST YOU FUNCTION

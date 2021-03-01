@@ -1,15 +1,15 @@
 import sys
-from cv2 import cv2 
+from cv2 import cv2
 from os import listdir, path
 import numpy as np
 import functions
 import utils
 import xlsxwriter
 
-TEST_MODE = True
+TEST_MODE = False
 
 #Main function for data Collection
-def main(folderName="Logos", functionList=functions.ExportFunctions, debug=False):
+def main(folderName="500Logos", functionList=functions.ExportFunctions, debug=False):
 
     dir_path = path.dirname(path.realpath(__file__)) + "\\..\\"+folderName+"\\"
 
@@ -19,15 +19,21 @@ def main(folderName="Logos", functionList=functions.ExportFunctions, debug=False
 
         img = cv2.imread(dir_path + imgPath, cv2.IMREAD_UNCHANGED)
 
+        print(dir_path + imgPath)
+        if not(isinstance(img[0,0], np.ndarray)):
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
         if (len(img[0,0]) < 4): # If there is no alpha value
             img = AddAlphaChannel(img)
+
+        img[np.where(cv2.split(img)[3] == 0)] = [0,0,0,0] #Enforce transparent pixels
             
         bImg = utils.AddBorder(img, [0,0,0,0])
  
         logo = Logo(img, bImg, imgPath)
         
         for function in functionList:
-            function(logo, True)  
+            function(logo, False)  
 
         if debug:
             print(logo.name)
@@ -90,7 +96,7 @@ def exportToExcel(logos):
 
         column = 3
         for key in logos[0].attributes:
-            worksheet.write(row, column, str(logos[0].attributes[key]))
+            worksheet.write(row, column, str(logo.attributes[key]))
             column += 1
         row += 1
 
