@@ -10,9 +10,9 @@ def detectShapes(logo, display):
     if (display):
         disImg = img.copy()
 
-    grayImg = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    grayImg = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
 
-    #edges = cv2.Canny(grayImg, 30, 100)
+    #edges = cv2.Canny(grayImg, 30, 100)  
 
     contours, hierarchy = cv2.findContours(grayImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
@@ -37,7 +37,7 @@ def detectShapes(logo, display):
 
         epsilon = 0.005*cv2.arcLength(cnt, True)
 
-        if epsilon >= .01:
+        if epsilon >= .05:
 
             approx = cv2.approxPolyDP(cnt, epsilon, True)
 
@@ -191,8 +191,13 @@ def whitespace(logo, display):
         cv2.imshow("whitespace", disImg)
         cv2.waitKey(0)
 
+<<<<<<< HEAD
     logo.attributes["Percent Whitespace"] = horizontalWhitespace/totalCountedPixels
 
+=======
+    logo.attributes["Percent Whitespace"] = horizontalWhitespace/totalCountedPixels * 100
+    
+>>>>>>> f735ce031d5db86292f82ffb6a85d7f1478f10a5
 def aveBrightness(logo, display = False, Tol = 0.10):
     image = logo.img
     #Convert to grayscale
@@ -330,10 +335,14 @@ def percentBlackWhiteColor(logo, display):
     logo.attributes['% White'] = percentWhite
     logo.attributes['% Color'] = percentColor
 #Add name of function to this array
-ExportFunctions = []
+ExportFunctions = [detectShapes, whitespace, colorfulness]
 
 #Add name of function to this array if you want to test
+<<<<<<< HEAD
 TestFunctions = [percentBlackWhiteColor]
+=======
+TestFunctions = [detectShapes]
+>>>>>>> f735ce031d5db86292f82ffb6a85d7f1478f10a5
 
 '''
 HOW TO TEST YOU FUNCTION

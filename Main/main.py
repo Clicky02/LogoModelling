@@ -5,43 +5,78 @@ import numpy as np
 import functions
 import utils
 import xlsxwriter
+import shutil
+import os
 
 TEST_MODE = False
 
 #Main function for data Collection
 def main(folderName="500Logos", functionList=functions.ExportFunctions, debug=False):
 
-    dir_path = path.dirname(path.realpath(__file__)) + "\\..\\"+folderName+"\\"
+    dir_path = os.path.join(path.dirname(path.realpath(__file__)), "..\\"+folderName+"\\")
 
     logos = []
 
+    i = 0
+    totalLogos = len(listdir(dir_path))
     for imgPath in listdir(dir_path):
 
         img = cv2.imread(dir_path + imgPath, cv2.IMREAD_UNCHANGED)
 
-        print(dir_path + imgPath)
+        #Do not try to load directories
+        if os.path.isdir(dir_path + imgPath):  
+            continue
+        
+        #Handle images not loading
+        if img is None:
+            clearConsoleLine()
+            print("Failed to load " + imgPath + ".\n")
+            continue
+        
+        #Converts grayscale to color images
         if not(isinstance(img[0,0], np.ndarray)):
             img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
-        if (len(img[0,0]) < 4): # If there is no alpha value
+        #Converts BGR images to BGRA images with the background removed
+        if (len(img[0,0]) < 4): 
             img = AddAlphaChannel(img)
 
-        img[np.where(cv2.split(img)[3] == 0)] = [0,0,0,0] #Enforce transparent pixels
+        #Casts images to uint8 if necessary so all opencv functions work on them
+        if (img.dtype != "uint8"):
+            img = img.astype('uint8')
+
+        img[np.where(cv2.split(img)[3] == 0)] = [0,0,0,0] #Enforce fully transparent pixels
             
         bImg = utils.AddBorder(img, [0,0,0,0])
- 
+
         logo = Logo(img, bImg, imgPath)
         
         for function in functionList:
-            function(logo, False)  
+            try:
+                function(logo, False) 
+            except Exception as e:
+                clearConsoleLine()
+                print("\nFunction Failed") 
+                print("Logo: " + logo.name)
+                print("Function: " + function.__name__)
+                print("Exception: " + str(e))
 
         if debug:
+            clearConsoleLine()
             print(logo.name)
             print(logo.attributes)
 
         logos.append(logo)
-    
+
+        printProgressBar(i, totalLogos)
+        i += 1
+
+    clearConsoleLine()
+    print("Exporting to Excel...\n")
+
     exportToExcel(logos)
+
+    print("Finished\n")
 
 class Logo:
     def __init__(self, img, borderedImg, name):
@@ -55,17 +90,17 @@ def AddAlphaChannel(img):
     alpha_channel = np.ones(b_channel.shape, dtype=b_channel.dtype) * 255
     img_BGRA = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))
 
-    backColor = utils.GetBackground(img)
+    backColor = utils.GetBlackWhiteBackground(img)
 
-    if backColor == [0,0,0] or backColor == [255,255,255]:
-        img_BGRA = utils.removeColor(img_BGRA, backColor)
+    if backColor != "other":
+        img_BGRA = utils.removeBackground(img_BGRA, backColor)
 
     return img_BGRA
 
 def exportToExcel(logos):
     #There must be at least one logo
     assert(len(logos) > 0)
-
+    
     workbook = xlsxwriter.Workbook('LogoData.xlsx')
     worksheet = workbook.add_worksheet()
 
@@ -76,32 +111,43 @@ def exportToExcel(logos):
     worksheet.write(0, 1, "Start Year", bold)
     worksheet.write(0, 2, "End Year", bold)
 
-    column = 3
+    col = 3
     for key in logos[0].attributes:
-        worksheet.write(0, column, key, bold)
-        column += 1
+        worksheet.write(0, col, key, bold)
+        col += 1
 
     #Increase width of columns
-    worksheet.set_column(0, column, 20)
+    worksheet.set_column(0, col, 20)
     
     #Fill in the data for all other logos
     row = 1
     for logo in logos:
+        try:
+            logoDescriptors = logo.name.split(".")[0].split("_")
 
-        logoDescriptors = logo.name.split(".")[0].split("_")
+            worksheet.write(row, 0, logoDescriptors[0]) #Company Name
+            worksheet.write(row, 1, logoDescriptors[1]) #Logo Start Year
+            worksheet.write(row, 2, logoDescriptors[2]) #Logo End Year
 
-        worksheet.write(row, 0, logoDescriptors[0]) #Company Name
-        worksheet.write(row, 1, logoDescriptors[1]) #Logo Start Year
-        worksheet.write(row, 2, logoDescriptors[2]) #Logo End Year
-
-        column = 3
-        for key in logos[0].attributes:
-            worksheet.write(row, column, str(logo.attributes[key]))
-            column += 1
-        row += 1
+            col = 3
+            for key in logos[0].attributes:
+                worksheet.write(row, col, str(logo.attributes[key]))
+                col += 1
+            row += 1
+        except:
+            print("\nWriting to excel failed for " + logo.name + ".")
+            print("Check and see if the name is formatted correctly.\n")
 
     workbook.close()
 
+def printProgressBar(iteration, total):
+    percentFilled = iteration / total
+    amountFilled = int(30 * percentFilled)
+    amountEmpty = 30 - amountFilled
+    print(f"  {percentFilled*100:.1f}% [" + ("█" * amountFilled) + ("-" * amountEmpty) + "]", end = '\r')
+
+def clearConsoleLine():
+    print('\r                                                                         ', end = '\r')
 
 if __name__ == "__main__":
     
