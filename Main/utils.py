@@ -176,48 +176,63 @@ def AddBorder(img, backgroundColor):
     )
     return border
 
-def GetBackground(img):
-    colors = {}
+def GetBlackWhiteBackground(img):
+    pixelValues = {}
 
     row, col = img.shape[:2]
 
     for curRow in range(row-1):
         if curRow == 0:
             for curCol in range(col):
-                UpdateColorsWithPixel(colors, img[0][curCol], False)
-                UpdateColorsWithPixel(colors, img[row-1][curCol], False)
+                UpdatePixelValues(pixelValues, img[0][curCol])
+                UpdatePixelValues(pixelValues, img[row-1][curCol])
         else:
-            UpdateColorsWithPixel(colors, img[curRow][0], False)
-            UpdateColorsWithPixel(colors, img[curRow][col - 1], False)
+            UpdatePixelValues(pixelValues, img[curRow][0])
+            UpdatePixelValues(pixelValues, img[curRow][col - 1])
 
     highestKey = ''
     highestValue = 0
 
-    for key in colors:
-        if colors[key] > highestValue:
+    for key in pixelValues:
+        if pixelValues[key] > highestValue:
             highestKey = key
-            highestValue = colors[key]
+            highestValue = pixelValues[key]
 
-    return [int(i) for i in highestKey.split(",")]
+    return highestKey
 
-def UpdateColorsWithPixel(colorDict, pixel, useAlpha):
-    if useAlpha:
-        key = "{},{},{},{}".format(*pixel)
+
+def UpdatePixelValues(pixelValues, pixel):
+    if isWhite(pixel):
+        key = "white"
+    elif isBlack(pixel):
+        key = "black"
     else:
-        key = "{},{},{}".format(*pixel)
-
-    if key in colorDict:
-        colorDict[key] += 1
+        key = "other"
+    
+    if key in pixelValues:
+        pixelValues[key] += 1
     else:
-        colorDict[key] = 1
+        pixelValues[key] = 1
 
-def removeColor(img, color):
+
+def removeBackground(img, color):
+    assert(color == "white" or color == "black")
+
     row, col = img.shape[:2]
 
     for curRow in range(row):
         for curCol in range(col):
-            if img[curRow,curCol,0] == color[0] and img[curRow,curCol,1] == color[1] and img[curRow,curCol,2] == color[2]:
-                img[curRow,curCol] = [0, 0, 0, 0]
+            if color == "white":
+                if isWhite(img[curRow,curCol]):
+                    img[curRow,curCol] = [0, 0, 0, 0]
+            elif color == "black":
+                if isBlack(img[curRow,curCol]):
+                    img[curRow,curCol] = [0, 0, 0, 0]
     
     return img
 
+def isWhite(pixel):
+    return pixel[0] > 240 and pixel[1] > 240 and pixel[2] > 240
+
+def isBlack(pixel):
+    return pixel[0] < 15 and pixel[1] < 15 and pixel[2] < 15
