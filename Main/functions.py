@@ -308,6 +308,7 @@ def Main_for_Number_of_Colors(logo, display): # Black and White do not count as 
         logo.attributes["Number of colors"] = ctr
     else:
         logo.attributes["Multicolored?"] = False
+
 def percentBlackWhiteColor(logo, display):
     img = logo.img
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -329,6 +330,8 @@ def percentBlackWhiteColor(logo, display):
     logo.attributes['% Black'] = percentBlack
     logo.attributes['% White'] = percentWhite
     logo.attributes['% Color'] = percentColor
+
+
 #Add name of function to this array
 ExportFunctions = [detectShapes, whitespace, colorfulness]
 
