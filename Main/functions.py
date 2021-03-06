@@ -191,13 +191,8 @@ def whitespace(logo, display):
         cv2.imshow("whitespace", disImg)
         cv2.waitKey(0)
 
-<<<<<<< HEAD
-    logo.attributes["Percent Whitespace"] = horizontalWhitespace/totalCountedPixels
-
-=======
     logo.attributes["Percent Whitespace"] = horizontalWhitespace/totalCountedPixels * 100
     
->>>>>>> f735ce031d5db86292f82ffb6a85d7f1478f10a5
 def aveBrightness(logo, display = False, Tol = 0.10):
     image = logo.img
     #Convert to grayscale
@@ -338,11 +333,7 @@ def percentBlackWhiteColor(logo, display):
 ExportFunctions = [detectShapes, whitespace, colorfulness]
 
 #Add name of function to this array if you want to test
-<<<<<<< HEAD
-TestFunctions = [percentBlackWhiteColor]
-=======
 TestFunctions = [detectShapes]
->>>>>>> f735ce031d5db86292f82ffb6a85d7f1478f10a5
 
 '''
 HOW TO TEST YOU FUNCTION
