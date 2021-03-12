@@ -54,6 +54,7 @@ def main(folderName="500Logos", functionList=functions.ExportFunctions, debug=Fa
         for function in functionList:
             try:
                 function(logo, False) 
+
             except Exception as e:
                 clearConsoleLine()
                 print("\nFunction Failed") 

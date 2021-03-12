@@ -310,7 +310,7 @@ def Main_for_Number_of_Colors(logo, display): # Black and White do not count as 
         logo.attributes["Multicolored?"] = False
 
 #Add name of function to this array
-ExportFunctions = [detectShapes, whitespace, colorfulness]
+ExportFunctions = [detectShapes, whitespace, colorfulness, colorVariance]
 
 #Add name of function to this array if you want to test
 TestFunctions = [detectShapes]
