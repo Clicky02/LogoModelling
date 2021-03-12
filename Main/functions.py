@@ -1,4 +1,4 @@
-from cv2 import cv2 
+from cv2 import cv2
 import utils
 import numpy as np
 
@@ -21,7 +21,7 @@ def detectShapes(logo, display):
     circles = 0
 
     blur = cv2.medianBlur(grayImg, 5)
-    
+
     circleObjects = cv2.HoughCircles(blur, cv2.HOUGH_GRADIENT, 1, 100)
 
     if circleObjects is not None:
@@ -32,7 +32,7 @@ def detectShapes(logo, display):
             circleObjects = np.round(circleObjects[0, :]).astype("int") #round locations to integers
             for (x, y, r) in circleObjects:
                 cv2.circle(disImg, (x, y), r, (0, 0, 255), 4) #draw circle
-        
+
     for cnt in contours:
 
         epsilon = 0.005*cv2.arcLength(cnt, True)
@@ -58,7 +58,7 @@ def detectShapes(logo, display):
 
                 if display:
                     cv2.drawContours(disImg, cnt, -1, (255,0,0), 3)
-            
+
 
     logo.attributes["Rectangles"] = rectangles
     logo.attributes["Triangles"] = triangles
@@ -73,7 +73,7 @@ def colorfulness(logo, display):
 
     # split the image into its respective RGB components
     B, G, R, A = cv2.split(img)
-	
+
 
     rg = np.absolute(R - G)
     yb = np.absolute(0.5 * (R + G) - B)
@@ -112,7 +112,7 @@ def colorVariance(logo, display):
     hueValues = cv2.split(hsvImg)[0]
 
     #Inverts mask (because of how numpy masks work)
-    mask = ((mask / 255) - 1) * -1  
+    mask = ((mask / 255) - 1) * -1
 
     masked = np.ma.masked_array(hueValues, mask=mask)
     hueValues = masked.compressed() #Gets a 1d array of non-masked values
@@ -122,7 +122,7 @@ def colorVariance(logo, display):
 
     #Get x and y positions
     x = np.cos(hueValuesRad)
-    
+
     y = np.sin(hueValuesRad)
 
     #Get average hue (in degrees)
@@ -154,7 +154,7 @@ def whitespace(logo, display):
 
     if display:
         disImg = np.zeros_like(img)
-    
+
     rows, columns = img.shape[:2]
 
     horizontalWhitespace = 0
@@ -169,7 +169,7 @@ def whitespace(logo, display):
                 currentGap += 1
             else:
                 #If it finds a colored pixel after finding another colored
-                #pixel and whitespace, add the amount of whitespace to the 
+                #pixel and whitespace, add the amount of whitespace to the
                 #total whitespace
                 if currentGap > 0 and hasFoundForeground:
                     horizontalWhitespace += currentGap
@@ -179,7 +179,7 @@ def whitespace(logo, display):
                         for i in range(col-currentGap, col):
                             disImg[row, i] = [255, 255, 255, 255]
 
-                
+
                 totalCountedPixels += 1
                 currentGap = 0
                 hasFoundForeground = True
@@ -196,7 +196,7 @@ def whitespace(logo, display):
 def aveBrightness(logo, display = False, Tol = 0.10):
     image = logo.img
     #Convert to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) 
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     sumColor = 0
     numBack = 0
 
@@ -228,7 +228,7 @@ def aveBrightness(logo, display = False, Tol = 0.10):
     PercentBrightness = AveBrightness / 255 * 100
 
     logo.attributes["Percent Brightness"] = PercentBrightness
-    
+
 def gradients(logo, display = False, Tol = 0.1):
     image = logo.img
 
@@ -302,12 +302,35 @@ def Main_for_Number_of_Colors(logo, display): # Black and White do not count as 
         ctr = ctr + 1
     if(utils.Number_of_Colors(logo, "pink")):
         ctr = ctr + 1
-    
+
     if(ctr>=2):
         logo.attributes["Multicolored?"] = True
         logo.attributes["Number of colors"] = ctr
     else:
         logo.attributes["Multicolored?"] = False
+
+def percentBlackWhiteColor(logo, display):
+    img = logo.img
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    sumBlack = 0
+    sumWhite = 0
+    sumColor = 0
+    for i in range(gray.shape[0]):
+        for j in range(gray.shape[1]):
+            if gray[i,j] <= 20:
+                sumBlack += 1
+            elif gray[i,j] >= 230:
+                sumWhite += 1
+            else:
+                sumColor += 1
+    Total = gray.shape[1]*gray.shape[0]
+    percentBlack = sumBlack / Total * 100
+    percentWhite = sumWhite / Total * 100
+    percentColor = sumColor / Total * 100
+    logo.attributes['% Black'] = percentBlack
+    logo.attributes['% White'] = percentWhite
+    logo.attributes['% Color'] = percentColor
+
 
 #Add name of function to this array
 ExportFunctions = [detectShapes, whitespace, colorfulness, colorVariance]
@@ -319,10 +342,10 @@ TestFunctions = [detectShapes]
 HOW TO TEST YOU FUNCTION
 ------------------------
 
-1. Pick what logos you want to test with and make sure they are 
+1. Pick what logos you want to test with and make sure they are
 the only logos in the TestLogos folder
 
-2. Add your function name to the TestFunctions array (and delete any 
+2. Add your function name to the TestFunctions array (and delete any
 other functions in there unless you want to test those functions too)
 
 3. Make sure the TEST_MODE variable in the main.py file is set to True.
