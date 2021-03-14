@@ -7,6 +7,9 @@ import utils
 import xlsxwriter
 import shutil
 import os
+from cairosvg import svg2png
+from PIL import Image
+from io import BytesIO
 
 TEST_MODE = False
 
@@ -21,7 +24,24 @@ def main(folderName="500Logos", functionList=functions.ExportFunctions, debug=Fa
     totalLogos = len(listdir(dir_path))
     for imgPath in listdir(dir_path):
 
-        img = cv2.imread(dir_path + imgPath, cv2.IMREAD_UNCHANGED)
+        extension = imgPath.split('.')[-1]
+
+        if extension != "svg":
+            img = cv2.imread(dir_path + imgPath, cv2.IMREAD_UNCHANGED)
+        else:
+            svgFile = open(dir_path + imgPath, mode='r')
+            svgContent = svgFile.read()
+            svgFile.close()
+            try:
+                png = svg2png(svgContent)
+                                
+                pil_img = Image.open(BytesIO(png)).convert('RGBA')
+                
+                img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGBA2BGRA)
+
+            except:
+                print("SVG Failed to load " + imgPath + ".\n")
+                continue
 
         #Do not try to load directories
         if os.path.isdir(dir_path + imgPath):  
@@ -37,19 +57,21 @@ def main(folderName="500Logos", functionList=functions.ExportFunctions, debug=Fa
         if not(isinstance(img[0,0], np.ndarray)):
             img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
-        #Converts BGR images to BGRA images with the background removed
-        if (len(img[0,0]) < 4): 
-            img = AddAlphaChannel(img)
-
         #Casts images to uint8 if necessary so all opencv functions work on them
         if (img.dtype != "uint8"):
             img = img.astype('uint8')
 
-        img[np.where(cv2.split(img)[3] == 0)] = [0,0,0,0] #Enforce fully transparent pixels
-            
-        bImg = utils.AddBorder(img, [0,0,0,0])
+        origImg = img
 
-        logo = Logo(img, bImg, imgPath)
+        #Converts BGR images to BGRA images with the background removed
+        if (len(img[0,0]) < 4): 
+            origImg, img = AddAlphaChannel(img)
+
+
+
+        img[np.where(cv2.split(img)[3] == 0)] = [0,0,0,0] #Enforce fully transparent pixels
+
+        logo = Logo(img, origImg, imgPath)
         
         for function in functionList:
             try:
@@ -80,9 +102,9 @@ def main(folderName="500Logos", functionList=functions.ExportFunctions, debug=Fa
     print("Finished\n")
 
 class Logo:
-    def __init__(self, img, borderedImg, name):
+    def __init__(self, img, originalImg, name):
         self.img = img
-        self.borderedImg = img
+        self.originalImg = originalImg
         self.name = name
         self.attributes = {}
 
@@ -94,9 +116,11 @@ def AddAlphaChannel(img):
     backColor = utils.GetBlackWhiteBackground(img)
 
     if backColor != "other":
-        img_BGRA = utils.removeBackground(img_BGRA, backColor)
+        imgNoBackground = utils.removeBackground(img_BGRA, backColor)
+    else:
+        imgNoBackground = img_BGRA
 
-    return img_BGRA
+    return img_BGRA, imgNoBackground
 
 def exportToExcel(logos):
     #There must be at least one logo

@@ -310,30 +310,51 @@ def Main_for_Number_of_Colors(logo, display): # Black and White do not count as 
         logo.attributes["Multicolored?"] = False
 
 def percentBlackWhiteColor(logo, display):
-    img = logo.img
+    img = logo.originalImg
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     sumBlack = 0
     sumWhite = 0
     sumColor = 0
+    sumTransparent = 0
     for i in range(gray.shape[0]):
         for j in range(gray.shape[1]):
-            if gray[i,j] <= 20:
-                sumBlack += 1
-            elif gray[i,j] >= 230:
-                sumWhite += 1
+            if img[i,j,3] <= 0:
+                sumTransparent += 1
             else:
-                sumColor += 1
+                if gray[i,j] <= 20:
+                    sumBlack += 1
+                elif gray[i,j] >= 230:
+                    sumWhite += 1
+                else:
+                    sumColor += 1
     Total = gray.shape[1]*gray.shape[0]
     percentBlack = sumBlack / Total * 100
     percentWhite = sumWhite / Total * 100
     percentColor = sumColor / Total * 100
+    percentTransparent = sumTransparent / Total * 100
     logo.attributes['% Black'] = percentBlack
     logo.attributes['% White'] = percentWhite
     logo.attributes['% Color'] = percentColor
+    logo.attributes['% Transparent'] = percentTransparent
 
+def isGrayscale(logo, display):
+    img = logo.originalImg
+    w = img.shape[0]
+    h = img.shape[1]
+    for i in range(w):
+        for j in range(h):
+            r, g, b, a = img[i,j]
+            r = int(r)
+            g = int(g)
+            b = int(b)
+            if a != 0 and (abs(r - g) > 5 or abs(b - g) > 5 or abs(r - b) > 5):
+                logo.attributes['Is Grayscale'] = False
+                return
+    logo.attributes['Is Grayscale'] = True
 
 #Add name of function to this array
-ExportFunctions = [detectShapes, whitespace, colorfulness, colorVariance]
+ExportFunctions = [colorfulness, whitespace, colorVariance, aveBrightness, gradients, Main_for_Percent_of_Colors, Main_for_Number_of_Colors, percentBlackWhiteColor, isGrayscale]
+#colorfulness, whitespace, colorVariance, aveBrightness, gradients, Main_for_Percent_of_Colors, Main_for_Number_of_Colors, percentBlackWhiteColor
 
 #Add name of function to this array if you want to test
 TestFunctions = [detectShapes]
