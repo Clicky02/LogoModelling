@@ -203,15 +203,16 @@ def aveBrightness(logo, display = False, Tol = 0.10):
     grayNoBack = gray.copy()
 
     rows, cols = gray.shape
-    for i in range(rows):
-        for j in range(cols):
+    
+    for i in range(0,rows,1):
+        for j in range(0,cols,1):
             #If background is transparent, add one to the number of background pixels
             # I don't think this block of code is necessary anymore as main.py gives all pixels an alpha value of 255 (opaque) ~ PG
             if (image[i,j,3] <= (255-(255*(1-Tol)))):
                 numBack = numBack + 1
 
-        #Add current pixel to the total of pixels
-        sumColor = sumColor + grayNoBack[i,j]
+            #Add current pixel to the total of pixels
+            sumColor = sumColor + grayNoBack[i,j]   
 
     #Display processed images
     if display == 1:
@@ -353,7 +354,7 @@ def isGrayscale(logo, display):
     logo.attributes['Is Grayscale'] = True
 
 #Add name of function to this array
-ExportFunctions = [colorfulness, whitespace, colorVariance, aveBrightness, gradients, Main_for_Percent_of_Colors, Main_for_Number_of_Colors, percentBlackWhiteColor, isGrayscale]
+ExportFunctions = [aveBrightness]
 #colorfulness, whitespace, colorVariance, aveBrightness, gradients, Main_for_Percent_of_Colors, Main_for_Number_of_Colors, percentBlackWhiteColor
 
 #Add name of function to this array if you want to test
