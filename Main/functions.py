@@ -210,9 +210,9 @@ def aveBrightness(logo, display = False, Tol = 0.10):
             # I don't think this block of code is necessary anymore as main.py gives all pixels an alpha value of 255 (opaque) ~ PG
             if (image[i,j,3] <= (255-(255*(1-Tol)))):
                 numBack = numBack + 1
-
-            #Add current pixel to the total of pixels
-            sumColor = sumColor + grayNoBack[i,j]   
+            else:
+                #Add current pixel to the total of pixels
+                sumColor = int(sumColor) + int(grayNoBack[i,j])   
 
     #Display processed images
     if display == 1:
