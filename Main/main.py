@@ -126,7 +126,7 @@ def exportToExcel(logos):
     #There must be at least one logo
     assert(len(logos) > 0)
     
-    workbook = xlsxwriter.Workbook('LogoData.xlsx')
+    workbook = xlsxwriter.Workbook('LogoDataNew.xlsx')
     worksheet = workbook.add_worksheet()
 
     bold = workbook.add_format({'bold': True})

@@ -144,6 +144,51 @@ def colorVariance(logo, display):
     logo.attributes["Average Hue"] = averageHue*(359/179) #Hue scaled to 360 degree convention
     logo.attributes["Hue Standard Deviation"] = hueStdDev*(359/179) #Hue scaled to 360 degree convention
 
+def averageSaturation(logo, display):
+    img = logo.img
+
+    #Seperate alpha channel to use as mask
+    A = cv2.split(img)[3]
+
+    ret, mask = cv2.threshold(A, 30, 255, cv2.THRESH_BINARY)
+
+    hsvImg = cv2.cvtColor(cv2.cvtColor(img, cv2.COLOR_BGRA2BGR), cv2.COLOR_BGR2HSV)
+
+    sataurationLayer = cv2.split(hsvImg)[1]
+
+    #Inverts mask (because of how numpy masks work)
+    mask = ((mask / 255) - 1) * -1
+
+    masked = np.ma.masked_array(sataurationLayer, mask=mask)
+    sataurationLayer = masked.compressed() #Gets a 1d array of non-masked values
+
+    averageSaturation = np.mean(sataurationLayer)
+
+    logo.attributes["Average Saturation"] = averageSaturation
+
+def averageValue(logo, display):
+    img = logo.img
+
+    #Seperate alpha channel to use as mask
+    A = cv2.split(img)[3]
+
+    ret, mask = cv2.threshold(A, 30, 255, cv2.THRESH_BINARY)
+
+    hsvImg = cv2.cvtColor(cv2.cvtColor(img, cv2.COLOR_BGRA2BGR), cv2.COLOR_BGR2HSV)
+
+    valueLayer = cv2.split(hsvImg)[2]
+
+    #Inverts mask (because of how numpy masks work)
+    mask = ((mask / 255) - 1) * -1
+
+    masked = np.ma.masked_array(valueLayer, mask=mask)
+    valueLayer = masked.compressed() #Gets a 1d array of non-masked values
+
+    averageValue = np.mean(valueLayer)
+
+    logo.attributes["Average Value"] = averageValue
+
+
 def whitespace(logo, display):
     '''
     This function determines how much whitespace there is as a percent
@@ -304,9 +349,10 @@ def Main_for_Number_of_Colors(logo, display): # Black and White do not count as 
     if(utils.Number_of_Colors(logo, "pink")):
         ctr = ctr + 1
 
+    logo.attributes["Number of colors"] = ctr
+    
     if(ctr>=2):
         logo.attributes["Multicolored?"] = True
-        logo.attributes["Number of colors"] = ctr
     else:
         logo.attributes["Multicolored?"] = False
 
@@ -354,7 +400,7 @@ def isGrayscale(logo, display):
     logo.attributes['Is Grayscale'] = True
 
 #Add name of function to this array
-ExportFunctions = [aveBrightness]
+ExportFunctions = [Main_for_Number_of_Colors, averageSaturation, averageValue]
 #colorfulness, whitespace, colorVariance, aveBrightness, gradients, Main_for_Percent_of_Colors, Main_for_Number_of_Colors, percentBlackWhiteColor
 
 #Add name of function to this array if you want to test
