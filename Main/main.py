@@ -1,11 +1,9 @@
-import sys
 from cv2 import cv2
 from os import listdir, path
 import numpy as np
-import functions
+import logo_processing
 import utils
 import xlsxwriter
-import shutil
 import os
 from cairosvg import svg2png
 from PIL import Image
@@ -14,8 +12,9 @@ from io import BytesIO
 TEST_MODE = False
 
 #Main function for data Collection
-def main(folderName="500Logos", functionList=functions.ExportFunctions, debug=False):
+def main(folderName="500Logos", functionList=logo_processing.ExportFunctions, debug=False):
 
+    # Gets path to the directory holding the logos
     dir_path = os.path.join(path.dirname(path.realpath(__file__)), "..\\"+folderName+"\\")
 
     logos = []
@@ -65,7 +64,7 @@ def main(folderName="500Logos", functionList=functions.ExportFunctions, debug=Fa
 
         #Converts BGR images to BGRA images with the background removed
         if (len(img[0,0]) < 4): 
-            origImg, img = AddAlphaChannel(img)
+            origImg, img = utils.AddAlphaChannel(img)
 
 
 
@@ -107,20 +106,6 @@ class Logo:
         self.originalImg = originalImg
         self.name = name
         self.attributes = {}
-
-def AddAlphaChannel(img):
-    b_channel, g_channel, r_channel = cv2.split(img)
-    alpha_channel = np.ones(b_channel.shape, dtype=b_channel.dtype) * 255
-    img_BGRA = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))
-
-    backColor = utils.GetBlackWhiteBackground(img)
-
-    if backColor != "other":
-        imgNoBackground = utils.removeBackground(img_BGRA, backColor)
-    else:
-        imgNoBackground = img_BGRA
-
-    return img_BGRA, imgNoBackground
 
 def exportToExcel(logos):
     #There must be at least one logo
@@ -174,9 +159,9 @@ def printProgressBar(iteration, total):
 def clearConsoleLine():
     print('\r                                                                         ', end = '\r')
 
-if __name__ == "__main__":
-    
+
+if __name__ == "__main__": 
     if TEST_MODE:
-        main("TestLogos", functions.TestFunctions, True)
+        main("TestLogos", logo_processing.TestFunctions, True)
     else:
         main()

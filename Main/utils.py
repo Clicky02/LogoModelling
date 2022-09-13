@@ -236,3 +236,17 @@ def isWhite(pixel):
 
 def isBlack(pixel):
     return pixel[0] < 15 and pixel[1] < 15 and pixel[2] < 15
+
+def AddAlphaChannel(img):
+    b_channel, g_channel, r_channel = cv2.split(img)
+    alpha_channel = np.ones(b_channel.shape, dtype=b_channel.dtype) * 255
+    img_BGRA = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))
+
+    backColor = utils.GetBlackWhiteBackground(img)
+
+    if backColor != "other":
+        imgNoBackground = utils.removeBackground(img_BGRA, backColor)
+    else:
+        imgNoBackground = img_BGRA
+
+    return img_BGRA, imgNoBackground
