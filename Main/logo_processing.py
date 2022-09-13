@@ -189,12 +189,18 @@ def averageValue(logo, display):
     logo.attributes["Average Value"] = averageValue
 
 
+
+
 def whitespace(logo, display):
     '''
+    Original Author: TODO
+    Name: Whitespace Module
+
     This function determines how much whitespace there is as a percent
     by going across each row of pixels and counting how many transparent
     pixels there are between colored pixels.
     '''
+
     img = logo.img
 
     if display:
@@ -237,8 +243,17 @@ def whitespace(logo, display):
         cv2.waitKey(0)
 
     logo.attributes["Percent Whitespace"] = horizontalWhitespace/totalCountedPixels * 100
-    
+
+
 def aveBrightness(logo, display = False, Tol = 0.10):
+    '''
+    Original Author: Nicholas Haehn
+    Name: Brightness Module
+
+    This function determines the brightness
+    of a logo based on the amount of 'white' in the image
+    '''
+
     image = logo.img
     #Convert to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -407,7 +422,7 @@ ExportFunctions = [Main_for_Number_of_Colors, averageSaturation, averageValue]
 TestFunctions = [detectShapes]
 
 '''
-HOW TO TEST YOU FUNCTION
+HOW TO TEST YOUR FUNCTION
 ------------------------
 
 1. Pick what logos you want to test with and make sure they are
